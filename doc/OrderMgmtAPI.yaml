@@ -1,0 +1,136 @@
+openapi: 3.0.3
+info:
+  title: Order Management API
+  version: 1.0.0
+  description: API for submitting and retrieving orders
+
+paths:
+  /orders:
+    post:
+      summary: Submit a new order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderSubmissionResponse'
+        '400':
+          description: Invalid order payload
+        '405':
+          description: Unsupported operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: Retrieve an order by orderId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId:
+                  type: string
+                  example: "1033"
+      responses:
+        '200':
+          description: Order details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderLookupResponse'
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        '405':
+          description: Unsupported operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Order:
+      type: object
+      properties:
+        orderId:
+          type: string
+        orderDate:
+          type: string
+          format: date
+        region:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+
+    OrderItem:
+      type: object
+      properties:
+        itemId:
+          type: string
+        itemName:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: number
+          format: float
+
+    OrderSubmissionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Order has been Accepted"
+        orderId:
+          type: string
+        region:
+          type: string
+
+    OrderLookupResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Order details retrieved"
+        OrderInfo:
+          type: object
+          properties:
+            orderId:
+              type: integer
+            region:
+              type: string
+            orderDate:
+              type: string
+              format: date
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Unsupported Operation"
+
+    NotFoundResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "No data found for input order #103333"
+      

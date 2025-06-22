@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="9f121635-032c-4a83-8bcb-ab7aed33e0f8" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="09c22d54-7dfd-4251-8107-25eb00a18fa6" >
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.username}" password="${db.password}" database="${db.database}" />
+	</db:config>
+	<db:config name="Database_Config1" doc:name="Database Config" doc:id="6ea89c35-7a88-4068-bd74-898b12b08b14" >
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.username}" password="${db.password}" database="${db.database}"/>
+	</db:config>
+	<flow name="demo-gblordmgmtFlow" doc:id="d150c55b-76b1-4bbd-9642-0e169482630a" >
+		<http:listener doc:name="Listener" doc:id="d418e753-4659-461b-ba5b-7733891e70f9" config-ref="HTTP_Listener_config" path="/orders/*">
+			<http:response statusCode="#[vars.httpStatus]" />
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="478aac7f-caf9-4c29-9e36-23c6ce68d942" message="Order JSON Recvd - - #[payload]"/>
+		<try doc:name="Try" doc:id="6e4b967d-8cd0-4558-87ae-9e56f3407868" >
+			<choice doc:name="Choice - POST or GET request" doc:id="b7601b98-d087-4564-ba3c-ff5c5a63a9fe">
+			<when expression="#[attributes.method == 'POST']">
+				<logger level="INFO" doc:name="Logger" doc:id="cfcdc787-ceff-4bc8-9330-f375ab23373b" message="Recv POST message - #[payload]" />
+				<set-variable value="#[payload]" doc:name="Set Variable with incoming Order Data" doc:id="b5046ad4-c87b-4956-9166-c4ba200e490a" variableName="origPayload" />
+				<db:insert doc:name="Insert Order Data to DB" doc:id="37139ecc-db6c-4925-b33f-20eab0c7d732" config-ref="Database_Config">
+					<db:sql><![CDATA[INSERT INTO test1 (orderId, region, orderDate) VALUES (:orderId, :region, :orderdate)]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+'orderId':vars.origPayload.orderId,
+'region':vars.origPayload.region,
+'orderdate':vars.origPayload.orderDate
+}]
+]]></db:input-parameters>
+				</db:insert>
+				<ee:transform doc:name="Transform Message" doc:id="10bf2b52-1cf0-418e-ab2a-10c124887b1f">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+
+---
+order: {
+  orderId: vars.origPayload.orderId,
+  orderDate: vars.origPayload.orderDate,
+  region: vars.origPayload.region,
+  items: {
+    item: vars.origPayload.items map (item) -> {
+      itemId: item.itemId,
+      itemName: item.itemName,
+      quantity: item.quantity,
+      price: item.price
+    }
+  }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Log" doc:id="fdf0737f-9e9b-41af-aade-ba953bda8f7a" message="Transformed JSON to XML -- #[payload]" />
+				<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;message: "Order has been Accepted",&#10;orderId : vars.origPayload.orderId,&#10;region: vars.origPayload.region&#10;}]' doc:name="Set Variable to form Order Created Response" doc:id="2bb739a7-fd18-47ef-8c4a-c649b84fccd4" variableName="rspMsg" />
+				<set-variable value="201" doc:name="Set Variable http Status to 201-Created" doc:id="86b5c19f-740f-426e-907a-1244e8ec1f25" variableName="httpStatus" />
+			</when>
+			<when expression="#[attributes.method == 'GET']">
+				<logger level="INFO" doc:name="Logger" doc:id="2b445f18-772f-4a3d-a1f6-9080263fee70" message="Recvd GET message -- #[attributes.relativePath] -- #[payload.orderId]" />
+				<set-variable value="#[payload.orderId]" doc:name="Set Variable with OrderID from request" doc:id="2402f8ef-1270-48fa-9487-0986bb6eac81" variableName="orderID" />
+				<db:select doc:name="Select order ID from DB" doc:id="6c998ead-99b6-4e44-9167-40a0ce494727" config-ref="Database_Config1">
+					<db:sql><![CDATA[select orderId, region, orderDate from test1 where orderId = :orderId]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+'orderId':vars.orderID
+}]]]></db:input-parameters>
+				</db:select>
+				<choice doc:name="Choice" doc:id="612d30a7-c026-4e15-bde8-a8b98f9e7323">
+					<when expression="#[isEmpty(payload)]">
+						<logger level="INFO" doc:name="Logger" doc:id="4a0a9920-130f-401e-a819-caec4d753823" message="DB returned no hits" />
+						<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;message: "No data found for input Order #" ++ vars.orderID&#10;}]' doc:name="Set Variable to form No data found Response" doc:id="ff24172a-c2ab-430c-b044-94b14df54de6" variableName="rspMsg" />
+						<set-variable value="404" doc:name="Set Variable http Status - 404 (Order Not found)" doc:id="87d2fb3a-adc2-4007-99af-577bfe189602" variableName="httpStatus" />
+					</when>
+					<otherwise>
+						<logger level="INFO" doc:name="Logger" doc:id="2054e413-5816-4103-bbc0-c5576d211e14" message="#[payload]" />
+						<ee:transform doc:name="Transform Message" doc:id="964ca4c6-1ff7-438c-99e7-1801020e2f4c">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	orderId:payload[0].orderId,
+	region:payload[0].region,
+	orderDate:payload[0].orderDate
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+						<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "Order details retrieved",&#10;	OrderInfo : payload&#10;}]' doc:name="Set Variable to form Data found Response" doc:id="ecb4cef2-ff2e-49c8-b8ee-ad45b843c504" variableName="rspMsg" />
+						<set-variable value="200" doc:name="Set Variable http Status to 200 OK (Data found)" doc:id="0c3822d5-e91a-41fc-8536-690a3df6515c" variableName="httpStatus" />
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Logger" doc:id="1bdc65cb-9241-4ffb-af99-a0515890c3f0" message="bad Operation" />
+				<set-variable value="Unsupported Operation" doc:name="Set Variable to return error response" doc:id="71f04e00-9361-4886-903a-0e8b8ceb743a" variableName="rspMsg" />
+				<set-variable value="405" doc:name="Set Variable http Status for Unsupported Operation" doc:id="8980e1cf-0b6e-4a92-a434-392dc12ae9b4" variableName="httpStatus" />
+			</otherwise>
+		</choice>
+		</try>
+		<set-payload value="#[vars.rspMsg]" doc:name="Set Payload" doc:id="9bfdcb65-1222-483e-a30e-e23df5dc2242" />
+	</flow>
+</mule>

@@ -1,0 +1,201 @@
+{
+	"info": {
+		"_postman_id": "952d877d-9927-4c45-b4e2-2a6cc4bc7aa8",
+		"name": "demo-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44702862",
+		"_collection_link": "https://ragav-9558615.postman.co/workspace/Ragav's-Workspace~ff15b1d5-eb76-4850-8cf9-624d4f6ea20a/collection/44702862-952d877d-9927-4c45-b4e2-2a6cc4bc7aa8?action=share&source=collection_link&creator=44702862"
+	},
+	"item": [
+		{
+			"name": "POST-orders-201-CREATED",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "c128c8f45c8b452ba018ed4966af93c4",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "02aCE0e98b8d45Ed9C86150Cb68704D8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"orderId\":\"1070\",\"orderDate\":\"2025-05-10\",\"region\" : \"SGP\",\"items\":[{\"itemId\":\"1\",\"itemName\":\"Product A\",\"quantity\":2,\"price\":10},{\"itemId\":\"2\",\"itemName\":\"Product B\",\"quantity\":1,\"price\":25}]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://demo-gblordmgmt-hq6psm.5sc6y6-1.usa-e2.cloudhub.io/orders",
+					"protocol": "https",
+					"host": [
+						"demo-gblordmgmt-hq6psm",
+						"5sc6y6-1",
+						"usa-e2",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET-orders-200-OK",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "c128c8f45c8b452ba018ed4966af93c4",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "02aCE0e98b8d45Ed9C86150Cb68704D8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"orderId\" : \"1069\" \n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://demo-gblordmgmt-hq6psm.5sc6y6-1.usa-e2.cloudhub.io/orders",
+					"protocol": "https",
+					"host": [
+						"demo-gblordmgmt-hq6psm",
+						"5sc6y6-1",
+						"usa-e2",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PUT-Unsupported-405-Method Not Allowed",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "c128c8f45c8b452ba018ed4966af93c4",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "02aCE0e98b8d45Ed9C86150Cb68704D8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"orderId\":\"105222\",\"orderDate\":\"2025-05-10\",\"region\" : \"SGP\",\"items\":[{\"itemId\":\"1\",\"itemName\":\"Product A\",\"quantity\":2,\"price\":10},{\"itemId\":\"2\",\"itemName\":\"Product B\",\"quantity\":1,\"price\":25}]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://demo-gblordmgmt-hq6psm.5sc6y6-1.usa-e2.cloudhub.io/orders",
+					"protocol": "https",
+					"host": [
+						"demo-gblordmgmt-hq6psm",
+						"5sc6y6-1",
+						"usa-e2",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET-orders 404-Not Found",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "e60F4922F23A4fB2b90433326E7ac2FB",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "5fc437a117bc4b1e9dd0987de6936606",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"orderId\" : \"33333\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://demo-gblordmgmt-hq6psm.5sc6y6-1.usa-e2.cloudhub.io/orders",
+					"protocol": "https",
+					"host": [
+						"demo-gblordmgmt-hq6psm",
+						"5sc6y6-1",
+						"usa-e2",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
